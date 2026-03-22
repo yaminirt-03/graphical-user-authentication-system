@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+<!-- Confetti Library -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+<!-- ================= FULL-FLOOR FLOATING STARS BACKGROUND ================= -->
+<div class="stars">
+    {% for i in range(150) %}
+    <div class="star" style="
+        left: {{ (loop.index0 * 7) % 100 }}%;
+        top: {{ (loop.index0 * 5) % 100 }}%;
+        width: {{ 1 + (loop.index0 % 3) }}px;
+        height: {{ 1 + (loop.index0 % 3) }}px;
+        animation-delay: {{ (loop.index0 * 0.1)|round(1) }}s;
+    "></div>
+    {% endfor %}
+</div>
+
+<body>
+    <!-- FULL-FLOOR FLOATING STARS -->
+    <div class="stars"> ... </div>
+<!-- THEME TOGGLE -->
+<div class="theme-toggle">🌙</div>
+
+<!-- DASHBOARD CONTAINER -->
+<div class="dashboard-container parallax-card">
+
+    <div class="card glass-card floating-card animated-border parallax-card">
+
+        <h1 class="welcome-text" id="greeting-text">Welcome 🚀 {{ user }}</h1>
+        <p class="subtitle">Multi-Level Graphical Authentication Active</p>
+
+        <!-- ================= ACCOUNT OVERVIEW ================= -->
+        <div style="margin-top:20px;">
+            <h3>📊 Account Overview</h3>
+            <p><strong>Username:</strong> {{ user }}</p>
+            <p><strong>Last Login:</strong>
+                {% if last_login %}
+                    {{ last_login[0] }}
+                {% else %}
+                    First Login
+                {% endif %}
+            </p>
+            <p><strong>Last Login IP:</strong>
+                {% if last_ip %}
+                    {{ last_ip[0] }}
+                {% else %}
+                    Not Available
+                {% endif %}
+            </p>
+        </div>
+
+        <hr style="margin:20px 0; opacity:0.3;">
+
+        <!-- ================= SECURITY SCORE ================= -->
+        <h3>🔐 Security Score</h3>
+        <div style="background:#333; border-radius:20px; margin-bottom:20px;">
+            <div style="
+                width: {{ security_score }}%;
+                background: linear-gradient(90deg,#00ff99,#00f5ff);
+                padding:8px;
+                border-radius:20px;
+                text-align:center;
+                font-weight:bold;">
+                {{ security_score }}%
+            </div>
+        </div>
+        <!-- ================= LOGIN STREAK ================= -->
+        <h4>Login Streak</h4>
+        <div class="progress-bar">
+        <div class="progress" style="width: 70%;"></div>
+        </div>
+        
+        <!-- ================= STATS SECTION ================= -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <h4>Total Logins</h4>
+                <p class="counter">{{ login_count }}</p>
+            </div>
+
+            <div class="stat-card">
+                <h4>Failed Attempts</h4>
+                <p class="counter">{{ failed_count }}</p>
+            </div>
+
+            <div class="stat-card">
+                <h4>Active Sessions</h4>
+                <p class="counter">{{ active_sessions }}</p>
+            </div>
+        </div>
+        <!-- ================= NOTES SECTION ================= -->
+        <h3 style="margin-top:25px;">📝 Personal Notes</h3>
+        <textarea id="notes"
+            placeholder="Write your notes..."
+            style="width:100%; height:80px; border-radius:10px; padding:10px; border:none;">
+        </textarea>
+        <button class="neon-btn" onclick="saveNotes()" style="margin-top:10px;">Save Notes</button>
+
+        <br><br>
+        <a href="/logout">
+            <button class="logout-btn">Logout</button>
+        </a>
+    </div>
+</div>
+
+<!-- ================= POPUP ELEMENT ================= -->
+<div id="popup" class="popup">🎉 Login Successful! Welcome 🚀</div>
+
+<!-- ================= ANIMATED COUNTERS ================= -->
+<script>
+document.querySelectorAll(".counter").forEach(counter => {
+    let target = parseInt(counter.innerText);
+    let count = 0;
+    let update = setInterval(() => {
+        count++;
+        counter.innerText = count;
+        if (count >= target) clearInterval(update);
+    }, 20);
+});
+</script>
+
+<!-- ================= NOTES SAVE SYSTEM (Per-User) ================= -->
+<script>
+function saveNotes(){
+    const notes = document.getElementById("notes").value;
+    localStorage.setItem("notes_" + "{{ user }}", notes);  // key includes username
+    alert("Notes Saved Successfully!");
+}
+
+// Load notes for current user
+window.onload = function(){
+    document.getElementById("notes").value = localStorage.getItem("notes_" + "{{ user }}") || "";
+};
+</script>
+
+<!-- ================= THEME TOGGLE + POPUP + CONFETTI ================= -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+    // THEME TOGGLE
+    const toggleBtn = document.querySelector(".theme-toggle");
+    if(toggleBtn){
+        if(localStorage.getItem("theme") === "light"){
+            document.body.classList.add("light-mode");
+            toggleBtn.innerHTML = "☀️";
+        }
+        toggleBtn.addEventListener("click", function(){
+            document.body.classList.toggle("light-mode");
+            if(document.body.classList.contains("light-mode")){
+                localStorage.setItem("theme","light");
+                toggleBtn.innerHTML = "☀️";
+            } else {
+                localStorage.setItem("theme","dark");
+                toggleBtn.innerHTML = "🌙";
+            }
+        });
+    }
+
+    // POPUP + CONFETTI CELEBRATION
+    const popup = document.getElementById("popup");
+
+    // Convert Flask variable to JS boolean
+    const showPopup = {{ 'true' if show_popup else 'false' }};
+
+    if(showPopup){
+        // Show popup
+        popup.classList.add("show");
+        setTimeout(() => { popup.classList.remove("show"); }, 3000);
+
+        // Trigger confetti
+        if(typeof confetti === "function"){
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+    }
+});
+</script>
+
+<!-- ================= DYNAMIC GREETING BASED ON TIME ================= -->
+<script>
+const greetingText = document.getElementById("greeting-text");
+const hour = new Date().getHours();
+let greeting = "Welcome 🚀 {{ user }}";
+
+if(hour >= 5 && hour < 12) greeting = "Good Morning 🚀 {{ user }}";
+else if(hour >= 12 && hour < 17) greeting = "Good Afternoon ☀️ {{ user }}";
+else if(hour >= 17 && hour < 21) greeting = "Good Evening 🌙 {{ user }}";
+else greeting = "Good Night 🌌 {{ user }}";
+
+greetingText.innerText = greeting;
+</script>
+
+
+<!-- ✅ PARALLAX CARD EFFECT -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+    const card = document.querySelector(".parallax-card");
+    if (!card) return;
+
+    card.addEventListener("mousemove", function(e) {
+
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+
+        const rotateX = ((y - centerY) / centerY) * 12;
+        const rotateY = ((centerX - x) / centerX) * 12;
+
+        card.style.transform =
+            `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+
+    });
+
+    card.addEventListener("mouseleave", function() {
+        card.style.transform =
+            "perspective(1000px) rotateX(0deg) rotateY(0deg)";
+    });
+
+});
+</script>
+
+</body>
+</html>
