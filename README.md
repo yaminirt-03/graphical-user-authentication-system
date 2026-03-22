@@ -1,4 +1,5 @@
-Graphical User Authentication System Project
+##Graphical User Authentication System Project
+
 A full-stack web application for tracking user streaks, login status, and personal notes. Built with modern web technologies, featuring user authentication, secure account management, and an interactive dashboard with real-time streak tracking.
 
 🎯 Overview
