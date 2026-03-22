@@ -56,14 +56,7 @@ Note Tagging - Categorize notes with tags
 Search Notes - Filter notes by content or tag
 Note Timestamp - Automatic creation and modification dates
 Rich Text Editor (optional) - Format notes with basic styling
-5. User Profile
-Profile Picture - Emoji avatar display
-Username Display - User identification
-Account Created Date - Registration timestamp
-Total Logins - Aggregate login count
-Current Streak - Active streak display
-Best Streak - Highest streak achievement
-Email Display - Account email if verified
+
 🛠️ Tech Stack
 Backend
 Framework: Python Flask
